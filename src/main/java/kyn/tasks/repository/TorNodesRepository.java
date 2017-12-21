@@ -24,7 +24,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class TorExitNodesRepository
+public class TorNodesRepository
 {
 
 	private static List<String> nodesCache;
@@ -41,7 +41,7 @@ public class TorExitNodesRepository
 	
 	
 	
-	public TorExitNodesRepository()
+	public TorNodesRepository()
 	{
 		nodesCache = new ArrayList<String>();
 	}

@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import kyn.tasks.service.CheckTorService;
+import kyn.tasks.service.CheckNodeService;
 
 
 @RestController
@@ -20,7 +20,7 @@ public class CheckNodeController {
 	String torList;
 	
 	@Autowired
-	CheckTorService serv;
+	CheckNodeService serv;
 	/**
 	 * Wyrażenie regularne - ":.+" - jest potrzebne by część parametru znajdującego się po "." nie była obcinana 
 	 * @param ip

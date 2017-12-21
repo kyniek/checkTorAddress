@@ -2,13 +2,13 @@ package kyn.tasks.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import kyn.tasks.repository.TorExitNodesRepository;
+import kyn.tasks.repository.TorNodesRepository;
 
 @Service
-public class CheckTorService 
+public class CheckNodeService 
 {
 	@Autowired
-	TorExitNodesRepository repo;
+	TorNodesRepository repo;
 	
 	public boolean check(String ip)
 	{
