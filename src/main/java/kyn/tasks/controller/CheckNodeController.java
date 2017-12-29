@@ -17,12 +17,12 @@ public class CheckNodeController {
 
 	
 	@Value("${tor.list}")
-	String torList;
+	private String torList;
 	
 	@Autowired
-	CheckNodeService serv;
+	private CheckNodeService serv;
 	/**
-	 * Wyrażenie regularne - ":.+" - jest potrzebne by część parametru znajdującego się po "." nie była obcinana 
+	 * Regular expression - ":.+" - is needed because part of parameter after "." is cut by default - we want to avoid this 
 	 * @param ip
 	 * @return
 	 */
@@ -37,7 +37,13 @@ public class CheckNodeController {
 		}
 		else
 		{
-			return new ResponseEntity<String>("", HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>("", HttpStatus.NOT_FOUND);
 		}
+	}
+	
+	@RequestMapping(value = "/", method = RequestMethod.GET)
+	public ResponseEntity<String> defMsg()
+	{
+		return new ResponseEntity<String>("Instructions : after hostname enter coma separated IP : A.B.C.D", HttpStatus.OK);
 	}
 }

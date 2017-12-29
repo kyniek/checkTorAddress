@@ -12,7 +12,11 @@ import java.security.cert.X509Certificate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
+
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -30,12 +34,12 @@ public class TorNodesRepository
 	private static List<String> nodesCache;
 
 	@Value("${tor.list}")
-	String torList;
+	private String torList;
 	
 	@Value("${tor.update.interval}")
-	long updateInterval;
+	private long updateInterval;
 	
-	LocalDateTime lastChecked;
+	private LocalDateTime lastChecked;
 
 	
 	
@@ -58,7 +62,8 @@ public class TorNodesRepository
 
 	private void updateData()
 	{
-		nodesCache.clear();
+		List<String> tmpList = new LinkedList<>();
+		
 		/*
 		 * fix for Exception in thread "main" javax.net.ssl.SSLHandshakeException:
 		 * sun.security.validator.ValidatorException: PKIX path building failed:
@@ -126,7 +131,7 @@ public class TorNodesRepository
 				// System.out.println(inputLine);
 				if (inputLine.startsWith("ExitAddress"))
 				{
-					nodesCache.add(inputLine.split(" ")[1]);
+					tmpList.add(inputLine.split(" ")[1]);
 				}
 			}
 			br.close();
@@ -137,7 +142,13 @@ public class TorNodesRepository
 		} catch (IOException e)
 		{
 			e.printStackTrace();
-		}		
+		}
+		//Convert linkedList to arrayList for better performance
+		nodesCache = Collections.unmodifiableList(
+				tmpList.stream()
+				.collect(Collectors.toCollection(ArrayList::new))
+		);
+		
 		lastChecked = LocalDateTime.now();
 	}
 
