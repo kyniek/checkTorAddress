@@ -27,6 +27,8 @@ import javax.net.ssl.X509TrustManager;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
+import kyn.tasks.repository.util.SelfSignedSSLconnectionUtil;
+
 @Repository
 public class TorNodesRepository
 {
@@ -56,93 +58,17 @@ public class TorNodesRepository
 		{
 			updateData();
 		}
-		System.out.println( lastChecked.until(LocalDateTime.now(), ChronoUnit.MINUTES) + " > " + updateInterval);
 		return nodesCache;
 	}
 
+	
 	private void updateData()
 	{
-		List<String> tmpList = new LinkedList<>();
+		SelfSignedSSLconnectionUtil util = new SelfSignedSSLconnectionUtil();
+		util.setupDefaultSSLSocketFactory();
+		//get records and process them with method addIP defined localy
+		List<String> tmpList = util.getRecords(torList, this::addIP);		
 		
-		/*
-		 * fix for Exception in thread "main" javax.net.ssl.SSLHandshakeException:
-		 * sun.security.validator.ValidatorException: PKIX path building failed:
-		 * sun.security.provider.certpath.SunCertPathBuilderException: unable to find
-		 * valid certification path to requested target
-		 */
-		TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager()
-		{
-			public java.security.cert.X509Certificate[] getAcceptedIssuers()
-			{
-				return null;
-			}
-
-			public void checkClientTrusted(X509Certificate[] certs, String authType)
-			{}
-
-			public void checkServerTrusted(X509Certificate[] certs, String authType)
-			{}
-
-		} };
-
-
-		try
-		{
-			SSLContext sc = SSLContext.getInstance("SSL");
-			sc.init(null, trustAllCerts, new java.security.SecureRandom());
-			HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());			
-		} catch (NoSuchAlgorithmException e1)
-		{
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} catch (KeyManagementException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}		
-
-		// Create all-trusting host name verifier
-		HostnameVerifier allHostsValid = new HostnameVerifier()
-		{
-			public boolean verify(String hostname, SSLSession session)
-			{
-				return true;
-			}
-		};
-		// Install the all-trusting host verifier
-		HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
-		/*
-		 * end of the fix
-		 */
-
-		
-
-		try
-		{
-			URL url = new URL(torList);
-			URLConnection conn = url.openConnection();
-
-			// open the stream and put it into BufferedReader
-			BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-
-			String inputLine;
-			while ((inputLine = br.readLine()) != null)
-			{
-				// System.out.println(inputLine);
-				if (inputLine.startsWith("ExitAddress"))
-				{
-					tmpList.add(inputLine.split(" ")[1]);
-				}
-			}
-			br.close();
-
-		} catch (MalformedURLException e)
-		{
-			e.printStackTrace();
-		} catch (IOException e)
-		{
-			e.printStackTrace();
-		}
 		//Convert linkedList to arrayList for better performance
 		nodesCache = Collections.unmodifiableList(
 				tmpList.stream()
@@ -150,6 +76,14 @@ public class TorNodesRepository
 		);
 		
 		lastChecked = LocalDateTime.now();
+	}
+
+	private void addIP(List<String> tmpList, String inputLine)
+	{
+		if (inputLine.startsWith("ExitAddress"))
+		{
+			tmpList.add(inputLine.split(" ")[1]);
+		}
 	}
 
 }
